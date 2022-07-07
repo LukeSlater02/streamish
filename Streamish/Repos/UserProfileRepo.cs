@@ -7,7 +7,7 @@ using Streamish.Utils;
 
 namespace Streamish.Repos
 {
-    public class UserProfileRepo : BaseRepository
+    public class UserProfileRepo : BaseRepository, IUserProfileRepo
     {
         public UserProfileRepo(IConfiguration configuration) : base(configuration) { }
 
@@ -33,7 +33,7 @@ namespace Streamish.Repos
                                 Name = DbUtils.GetString(reader, "Name"),
                                 Email = DbUtils.GetString(reader, "email"),
                                 ImageUrl = DbUtils.GetString(reader, "ImageUrl"),
-                                DateCreated =  DbUtils.GetDateTime(reader, "DateCreated")
+                                DateCreated = DbUtils.GetDateTime(reader, "DateCreated")
                             });
                         }
 
