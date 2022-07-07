@@ -7,6 +7,11 @@ using Streamish.Utils;
 
 namespace Streamish.Repos
 {
+    public interface IUserProfileRepo1
+    {
+        void GetUserByIdWithVideos(int id);
+    }
+
     public class UserProfileRepo : BaseRepository, IUserProfileRepo
     {
         public UserProfileRepo(IConfiguration configuration) : base(configuration) { }
@@ -83,9 +88,9 @@ namespace Streamish.Repos
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"
-                        INSERT INTO UserProfile (Id, Name, Email, ImageUrl, DateCreated)
+                        INSERT INTO UserProfile ( Name, Email, ImageUrl, DateCreated)
                         OUTPUT INSERTED.ID
-                        VALUES (@Id, @Name, @Email, @ImageUrl, @DateCreated)";
+                        VALUES (@Name, @Email, @ImageUrl, @DateCreated)";
 
                     DbUtils.AddParameter(cmd, "@Name", user.Name);
                     DbUtils.AddParameter(cmd, "@Email", user.Email);
@@ -109,7 +114,7 @@ namespace Streamish.Repos
                            SET Name = @Name,
                                Email = @Email,
                                DateCreated = @DateCreated,
-                               ImageUrl = @ImageUrl,
+                               ImageUrl = @ImageUrl
                          WHERE Id = @Id";
 
                     DbUtils.AddParameter(cmd, "@Name", user.Name);
@@ -133,6 +138,54 @@ namespace Streamish.Repos
                     cmd.CommandText = "DELETE FROM UserProfile WHERE Id = @Id";
                     DbUtils.AddParameter(cmd, "@id", id);
                     cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public UserProfile GetUserByIdWithVideos(int id)
+        {
+            using var conn = Connection;
+            {
+                conn.Open();
+                using var cmd = conn.CreateCommand();
+                {
+                    cmd.CommandText = @"SELECT u.Id, u.Name, u.Email, u.ImageUrl, u.DateCreated,
+                                        v.Id VidId, v.Title, v.Description, v.Url, v.DateCreated VidDate, v.UserProfileId
+                                        FROM UserProfile u
+                                        LEFT JOIN Video v ON v.UserProfileId = u.Id
+                                        WHERE u.Id = 2";
+                    var reader = cmd.ExecuteReader();
+
+                    UserProfile user = null;
+
+                    while (reader.Read())
+                    {
+                        if (user is null)
+                        {
+                            user = new UserProfile()
+                            {
+                                Id = DbUtils.GetInt(reader, "Id"),
+                                Name = DbUtils.GetString(reader, "Name"),
+                                Email = DbUtils.GetString(reader, "Email"),
+                                ImageUrl = DbUtils.GetString(reader, "ImageUrl"),
+                                DateCreated = DbUtils.GetDateTime(reader, "DateCreated"),
+                                Videos = new List<Video>()  
+                            };
+                        }
+                        if (DbUtils.IsNotDbNull(reader, "VidId"))
+                        {
+                            user.Videos.Add(new Video()
+                            {
+                                Id = DbUtils.GetInt(reader, "VidId"),
+                                Title = DbUtils.GetString(reader, "Title"),
+                                Description = DbUtils.GetString(reader, "Description"),
+                                Url = DbUtils.GetString(reader, "Url"),
+                                DateCreated = DbUtils.GetDateTime(reader, "VidDate"),
+                                UserProfileId = DbUtils.GetInt(reader, "UserProfileId"),
+                            });
+                        }
+                    }
+                    return user;
                 }
             }
         }
