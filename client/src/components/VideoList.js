@@ -26,7 +26,6 @@ const VideoList = () => {
     }
 
     useEffect(() => {
-        console.log(foundVideo)
         if (search !== "") {
             foundVideo.forEach(v => {
             document.querySelector("#search-results").innerHTML +=
