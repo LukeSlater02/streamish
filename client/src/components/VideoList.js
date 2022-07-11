@@ -21,6 +21,7 @@ const VideoList = () => {
     }
 
     async function handleButtonClick() {
+        setFoundVideo([])
         let result = await videoSearch(search, false)
         setFoundVideo(result)
     }

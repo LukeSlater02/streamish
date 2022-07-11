@@ -211,7 +211,7 @@ namespace Streamish.Repositories
                             UserProfileId = DbUtils.GetInt(reader, "CreatorId"),
                             UserProfile = new UserProfile()
                             {
-                                Id = DbUtils.GetInt(reader, "CommenterId"),
+                                Id = DbUtils.GetInt(reader, "CreatorId"),
                                 Name = DbUtils.GetString(reader, "UserName"),
                                 Email = DbUtils.GetString(reader, "Email"),
                                 ImageUrl = DbUtils.GetString(reader, "ImageUrl"),
